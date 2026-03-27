@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Suika Game - Watermelon Merge Puzzle</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="game-wrapper">
+    <!-- Header: Title & Score -->
+    <div class="game-header">
+      <div class="game-title">🍉 Suika</div>
+      <div class="score-display">
+        <span class="score-label">Score</span>
+        <span class="score-value" id="score-value">0</span>
+      </div>
+    </div>
+
+    <!-- Next Fruit Preview -->
+    <div class="next-fruit-display">
+      <span class="next-label">Next:</span>
+      <canvas id="next-fruit-preview" width="30" height="30"></canvas>
+    </div>
+
+    <!-- Game Area -->
+    <div class="game-container">
+      <div class="drop-guide" id="drop-guide" style="left: 200px;"></div>
+      <canvas id="game-canvas"></canvas>
+
+      <!-- Game Over Overlay -->
+      <div class="game-over-overlay" id="game-over-overlay">
+        <div class="game-over-text">Game Over!</div>
+        <div class="final-score" id="final-score">Final Score: 0</div>
+        <button class="restart-btn" id="restart-btn">Play Again</button>
+      </div>
+    </div>
+
+    <!-- Fruit Legend -->
+    <div class="fruit-legend" id="fruit-legend"></div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
