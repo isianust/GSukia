@@ -159,6 +159,17 @@ class Fruit {
 
 Fruit.nextId = 0;
 
+/**
+ * Lighten a hex color by the given amount.
+ */
+function lightenHex(hex, amount) {
+  const num = parseInt(hex.slice(1), 16);
+  const r = Math.min(255, ((num >> 16) & 0xff) + amount);
+  const g = Math.min(255, ((num >> 8) & 0xff) + amount);
+  const b = Math.min(255, (num & 0xff) + amount);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 // ─── Game Class ─────────────────────────────────────────────────────────────────
 class SuikaGame {
   constructor() {
@@ -274,7 +285,7 @@ class SuikaGame {
     ctx.clearRect(0, 0, 30, 30);
 
     const gradient = ctx.createRadialGradient(12, 12, 2, 15, 15, 12);
-    gradient.addColorStop(0, fruit.color);
+    gradient.addColorStop(0, lightenHex(fruit.color, 40));
     gradient.addColorStop(1, fruit.color);
 
     ctx.beginPath();
@@ -320,6 +331,9 @@ class SuikaGame {
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist === 0) continue; // avoid division by zero
+
         const minDist = a.radius + b.radius;
 
         if (dist < minDist) {
@@ -350,7 +364,6 @@ class SuikaGame {
           } else {
             // Different type or max type: push apart
             const overlap = minDist - dist;
-            if (dist === 0) continue; // avoid division by zero
 
             const nx = dx / dist;
             const ny = dy / dist;
