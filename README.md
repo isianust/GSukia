@@ -2,9 +2,13 @@
 
 A browser-based fruit-merging puzzle game inspired by [SuikaGame.com](https://suikagame.com), built with vanilla HTML, CSS, and JavaScript — no external dependencies required.
 
+## 🎮 Play Now
+
+**[Play Suika Game](https://isianust.github.io/GSukia/)**
+
 ## How to Play
 
-1. **Open** `index.html` in any modern browser.
+1. **Open** the [live game](https://isianust.github.io/GSukia/) or `index.html` in any modern browser.
 2. **Move** your mouse (or use arrow keys) to position the fruit above the container.
 3. **Click** (or press Space/Enter) to drop the fruit.
 4. When **two identical fruits** collide, they merge into the next larger fruit.
