@@ -1,43 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Suika Game - Watermelon Merge Puzzle</title>
+  <title>GSukia - Ball Merge Puzzle</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div class="bg-animation"></div>
   <div class="game-wrapper">
-    <!-- Header: Title & Score -->
+    <!-- Header -->
     <div class="game-header">
-      <div class="game-title">🍉 Suika</div>
-      <div class="score-display">
-        <span class="score-label">Score</span>
-        <span class="score-value" id="score-value">0</span>
+      <div class="game-title">GSukia</div>
+      <div class="header-stats">
+        <div class="stat-box">
+          <span class="stat-label">Round</span>
+          <span class="stat-value" id="round-value">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Score</span>
+          <span class="stat-value score-glow" id="score-value">0</span>
+        </div>
       </div>
     </div>
 
-    <!-- Next Fruit Preview -->
-    <div class="next-fruit-display">
-      <span class="next-label">Next:</span>
-      <canvas id="next-fruit-preview" width="30" height="30"></canvas>
+    <!-- Currency Bar -->
+    <div class="currency-bar">
+      <div class="currency-item copper">
+        <span class="coin-icon">🪙</span>
+        <span class="coin-count" id="copper-count">0</span>
+        <span class="coin-label">Copper</span>
+      </div>
+      <div class="currency-item silver">
+        <span class="coin-icon">🥈</span>
+        <span class="coin-count" id="silver-count">0</span>
+        <button class="coin-btn" id="use-silver" disabled title="Remove 3 random balls">Use</button>
+      </div>
+      <div class="currency-item gold">
+        <span class="coin-icon">🥇</span>
+        <span class="coin-count" id="gold-count">0</span>
+        <button class="coin-btn" id="use-gold" disabled title="Select 3 balls to remove">Use</button>
+      </div>
+    </div>
+
+    <!-- Next Ball Preview -->
+    <div class="next-ball-display">
+      <span class="next-label">NEXT</span>
+      <canvas id="next-ball-preview" width="50" height="50"></canvas>
     </div>
 
     <!-- Game Area -->
-    <div class="game-container">
-      <div class="drop-guide" id="drop-guide" style="left: 200px;"></div>
+    <div class="game-container" id="game-container">
+      <div class="drop-guide" id="drop-guide"></div>
       <canvas id="game-canvas"></canvas>
 
-      <!-- Game Over Overlay -->
-      <div class="game-over-overlay" id="game-over-overlay">
-        <div class="game-over-text">Game Over!</div>
-        <div class="final-score" id="final-score">Final Score: 0</div>
-        <button class="restart-btn" id="restart-btn">Play Again</button>
+      <!-- Selection Mode Indicator -->
+      <div class="selection-bar" id="selection-bar">
+        <span>🎯 Select balls to remove: <strong id="selection-remaining">3</strong> remaining</span>
+        <button class="cancel-selection-btn" id="cancel-selection">✕ Cancel</button>
       </div>
     </div>
 
-    <!-- Fruit Legend -->
-    <div class="fruit-legend" id="fruit-legend"></div>
+    <!-- Ball Legend -->
+    <div class="ball-legend" id="ball-legend"></div>
+  </div>
+
+  <!-- Calculator Challenge Dialog -->
+  <div class="dialog-overlay" id="calculator-dialog">
+    <div class="dialog-box">
+      <div class="dialog-icon">🧮</div>
+      <div class="dialog-title">Calculator Challenge!</div>
+      <div class="dialog-subtitle" id="calc-subtitle">Answer correctly to merge the balls!</div>
+      <div class="math-problem" id="math-problem"></div>
+      <input type="number" class="math-input" id="math-answer" placeholder="?" autocomplete="off">
+      <div class="attempts-info" id="calc-attempts">Attempts: 3 / 3</div>
+      <button class="dialog-btn submit-btn" id="calc-submit">Submit</button>
+      <div class="feedback-msg" id="calc-feedback"></div>
+    </div>
+  </div>
+
+  <!-- Multiplication Challenge Dialog -->
+  <div class="dialog-overlay" id="multiply-dialog">
+    <div class="dialog-box">
+      <div class="dialog-icon">✖️</div>
+      <div class="dialog-title">Multiplication Challenge!</div>
+      <div class="dialog-subtitle">Round 50 bonus! Answer correctly for a copper coin!</div>
+      <div class="math-problem" id="multiply-problem"></div>
+      <input type="number" class="math-input" id="multiply-answer" placeholder="?" autocomplete="off">
+      <button class="dialog-btn submit-btn" id="multiply-submit">Submit</button>
+      <div class="feedback-msg" id="multiply-feedback"></div>
+    </div>
+  </div>
+
+  <!-- Game Over Dialog -->
+  <div class="dialog-overlay" id="gameover-dialog">
+    <div class="dialog-box gameover-box">
+      <div class="dialog-icon">💥</div>
+      <div class="dialog-title">Game Over!</div>
+      <div class="final-score-text" id="final-score">Score: 0</div>
+      <div class="revive-section">
+        <div class="revive-title">Continue?</div>
+        <button class="revive-btn score-revive" id="revive-score">🔄 Use Score (-30 pts)</button>
+        <button class="revive-btn coin-revive" id="revive-coin">🪙 Use 1 Copper Coin</button>
+      </div>
+      <button class="restart-btn" id="restart-btn">🔄 New Game</button>
+    </div>
   </div>
 
   <script src="js/game.js"></script>
