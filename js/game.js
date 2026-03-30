@@ -199,6 +199,8 @@ class SuikaGame {
     this.setupEventListeners();
     this.updateNextFruitPreview();
     this.buildFruitLegend();
+    // Set initial drop guide position (scaled for current viewport)
+    this._updateDropGuide();
     this.gameLoop();
   }
 
@@ -207,30 +209,49 @@ class SuikaGame {
   }
 
   setupEventListeners() {
+    // Helper: convert client coordinates to internal canvas coordinates
+    const clientToCanvas = (clientX) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = CANVAS_WIDTH / rect.width;
+      return (clientX - rect.left) * scaleX;
+    };
+
+    // Helper: update drop guide position (accounts for CSS scaling)
+    const updateDropGuide = () => {
+      const rect = this.canvas.getBoundingClientRect();
+      const scaleX = CANVAS_WIDTH / rect.width;
+      this.dropGuide.style.left = (this.dropX / scaleX) + 'px';
+    };
+
     // Mouse movement for drop guide
     this.canvas.addEventListener('mousemove', (e) => {
       if (this.gameOver) return;
-      const rect = this.canvas.getBoundingClientRect();
-      this.dropX = e.clientX - rect.left;
+      this.dropX = clientToCanvas(e.clientX);
       this.dropX = Math.max(FRUITS[this.currentFruitType].radius,
         Math.min(CANVAS_WIDTH - FRUITS[this.currentFruitType].radius, this.dropX));
-      this.dropGuide.style.left = this.dropX + 'px';
+      updateDropGuide();
     });
 
     // Touch movement for mobile
     this.canvas.addEventListener('touchmove', (e) => {
       if (this.gameOver) return;
       e.preventDefault();
-      const rect = this.canvas.getBoundingClientRect();
       const touch = e.touches[0];
-      this.dropX = touch.clientX - rect.left;
+      this.dropX = clientToCanvas(touch.clientX);
       this.dropX = Math.max(FRUITS[this.currentFruitType].radius,
         Math.min(CANVAS_WIDTH - FRUITS[this.currentFruitType].radius, this.dropX));
-      this.dropGuide.style.left = this.dropX + 'px';
+      updateDropGuide();
     }, { passive: false });
 
     // Click/tap to drop fruit
-    this.canvas.addEventListener('click', () => this.dropFruit());
+    this.canvas.addEventListener('click', (e) => {
+      if (this.gameOver) return;
+      this.dropX = clientToCanvas(e.clientX);
+      this.dropX = Math.max(FRUITS[this.currentFruitType].radius,
+        Math.min(CANVAS_WIDTH - FRUITS[this.currentFruitType].radius, this.dropX));
+      updateDropGuide();
+      this.dropFruit();
+    });
     this.canvas.addEventListener('touchend', (e) => {
       e.preventDefault();
       this.dropFruit();
@@ -249,15 +270,18 @@ class SuikaGame {
       }
       if (e.key === 'ArrowLeft') {
         this.dropX = Math.max(FRUITS[this.currentFruitType].radius, this.dropX - 10);
-        this.dropGuide.style.left = this.dropX + 'px';
+        updateDropGuide();
       } else if (e.key === 'ArrowRight') {
         this.dropX = Math.min(CANVAS_WIDTH - FRUITS[this.currentFruitType].radius, this.dropX + 10);
-        this.dropGuide.style.left = this.dropX + 'px';
+        updateDropGuide();
       } else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         this.dropFruit();
       }
     });
+
+    // Store updateDropGuide for use in restart
+    this._updateDropGuide = updateDropGuide;
   }
 
   dropFruit() {
@@ -406,10 +430,14 @@ class SuikaGame {
   }
 
   showMergeEffect(x, y, fruitDef) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = rect.width / CANVAS_WIDTH;
+    const scaleY = rect.height / CANVAS_HEIGHT;
+
     const effect = document.createElement('div');
     effect.className = 'merge-effect';
-    effect.style.left = (x - 20) + 'px';
-    effect.style.top = (y - 20) + 'px';
+    effect.style.left = (x * scaleX - 20) + 'px';
+    effect.style.top = (y * scaleY - 20) + 'px';
     effect.style.width = '40px';
     effect.style.height = '40px';
     effect.style.background = fruitDef.color;
@@ -419,11 +447,15 @@ class SuikaGame {
   }
 
   showScorePopup(x, y, points) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = rect.width / CANVAS_WIDTH;
+    const scaleY = rect.height / CANVAS_HEIGHT;
+
     const popup = document.createElement('div');
     popup.className = 'score-popup';
     popup.textContent = '+' + points;
-    popup.style.left = x + 'px';
-    popup.style.top = y + 'px';
+    popup.style.left = (x * scaleX) + 'px';
+    popup.style.top = (y * scaleY) + 'px';
     this.gameContainer.appendChild(popup);
     setTimeout(() => popup.remove(), 800);
   }
@@ -464,7 +496,7 @@ class SuikaGame {
 
     this.scoreElement.textContent = '0';
     this.gameOverOverlay.classList.remove('active');
-    this.dropGuide.style.left = (CANVAS_WIDTH / 2) + 'px';
+    this._updateDropGuide();
     this.updateNextFruitPreview();
 
     Fruit.nextId = 0;
