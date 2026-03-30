@@ -42,6 +42,7 @@ const CALC_THRESHOLD = 10;     // sum > 10 triggers calculator challenge
 const MULTIPLY_ROUND_INTERVAL = 50; // every 50 rounds
 const COPPER_TO_SILVER = 10;
 const SILVER_TO_GOLD = 5;
+const FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
 
 // ─── Ball (Physics Body) ────────────────────────────────────────────────────────
 class Ball {
@@ -128,7 +129,7 @@ class Ball {
 
     // Number in center
     const fontSize = Math.max(12, Math.floor(this.radius * 0.7));
-    ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif`;
+    ctx.font = `bold ${fontSize}px ${FONT_FAMILY}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
@@ -368,7 +369,7 @@ class GSukiaGame {
     ctx.stroke();
 
     // Number
-    ctx.font = 'bold 14px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.font = `bold 14px ${FONT_FAMILY}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#fff';
@@ -690,6 +691,8 @@ class GSukiaGame {
 
     const toRemove = new Set();
     const toAdd = [];
+    // Only one calculator challenge can trigger per collision cycle;
+    // the function returns immediately when a challenge is shown.
     let challengeTriggered = false;
 
     for (let i = 0; i < this.balls.length; i++) {
@@ -827,10 +830,6 @@ class GSukiaGame {
     this.reviveScoreBtn.disabled = this.score < 30;
     this.reviveCoinBtn.disabled = this.copper < 1;
 
-    // Check for any remaining copper (including after auto-conversion)
-    const totalCopper = this.copper;
-    this.reviveCoinBtn.disabled = totalCopper < 1;
-
     this.gameoverDialog.classList.add('active');
   }
 
@@ -952,7 +951,7 @@ class GSukiaGame {
 
       // Preview number
       const fontSize = Math.max(10, Math.floor(r * 0.6));
-      ctx.font = `bold ${fontSize}px -apple-system, sans-serif`;
+      ctx.font = `bold ${fontSize}px ${FONT_FAMILY}`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = 'rgba(255,255,255,0.6)';
