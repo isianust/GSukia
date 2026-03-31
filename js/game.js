@@ -8,17 +8,17 @@
 
 // ─── Fruit Definitions ─────────────────────────────────────────────────────────
 const FRUITS = [
-  { name: 'Cherry',      radius: 15,  color: '#e74c3c', points: 1,   emoji: '🍒' },
-  { name: 'Strawberry',  radius: 20,  color: '#ff6b81', points: 3,   emoji: '🍓' },
-  { name: 'Grape',       radius: 25,  color: '#8e44ad', points: 6,   emoji: '🍇' },
-  { name: 'Dekopon',     radius: 30,  color: '#f39c12', points: 10,  emoji: '🍊' },
-  { name: 'Orange',      radius: 38,  color: '#e67e22', points: 15,  emoji: '🟠' },
-  { name: 'Apple',       radius: 45,  color: '#c0392b', points: 21,  emoji: '🍎' },
-  { name: 'Pear',        radius: 52,  color: '#a8d648', points: 28,  emoji: '🍐' },
-  { name: 'Peach',       radius: 60,  color: '#fd79a8', points: 36,  emoji: '🍑' },
-  { name: 'Pineapple',   radius: 68,  color: '#fdcb6e', points: 45,  emoji: '🍍' },
-  { name: 'Melon',       radius: 78,  color: '#00b894', points: 55,  emoji: '🍈' },
-  { name: 'Watermelon',  radius: 90,  color: '#27ae60', points: 66,  emoji: '🍉' },
+  { name: 'Cherry',      radius: 15,  color: '#e74c3c', highlight: '#ff8a80', points: 1,   emoji: '🍒' },
+  { name: 'Strawberry',  radius: 20,  color: '#ff6b81', highlight: '#ff9eb5', points: 3,   emoji: '🍓' },
+  { name: 'Grape',       radius: 25,  color: '#8e44ad', highlight: '#bb6bd9', points: 6,   emoji: '🍇' },
+  { name: 'Dekopon',     radius: 30,  color: '#f39c12', highlight: '#ffc857', points: 10,  emoji: '🍊' },
+  { name: 'Orange',      radius: 38,  color: '#e67e22', highlight: '#f5b041', points: 15,  emoji: '🟠' },
+  { name: 'Apple',       radius: 45,  color: '#c0392b', highlight: '#e74c3c', points: 21,  emoji: '🍎' },
+  { name: 'Pear',        radius: 52,  color: '#a8d648', highlight: '#c5e87e', points: 28,  emoji: '🍐' },
+  { name: 'Peach',       radius: 60,  color: '#fd79a8', highlight: '#fdabca', points: 36,  emoji: '🍑' },
+  { name: 'Pineapple',   radius: 68,  color: '#fdcb6e', highlight: '#fde49e', points: 45,  emoji: '🍍' },
+  { name: 'Melon',       radius: 78,  color: '#00b894', highlight: '#55efc4', points: 55,  emoji: '🍈' },
+  { name: 'Watermelon',  radius: 90,  color: '#27ae60', highlight: '#6dd5a0', points: 66,  emoji: '🍉' },
 ];
 
 // Only the first 5 fruit types can be randomly dropped
@@ -33,6 +33,7 @@ const BOUNCE = 0.3;
 const DANGER_LINE_Y = 80;
 const DROP_COOLDOWN_MS = 500;
 const GAME_OVER_GRACE_FRAMES = 90; // frames a fruit must be above line before game over
+const COMBO_WINDOW_MS = 1000; // milliseconds within which merges count as a combo
 
 // ─── Physics Body Class ─────────────────────────────────────────────────────────
 class Fruit {
@@ -44,12 +45,15 @@ class Fruit {
     this.typeIndex = typeIndex;
     this.radius = FRUITS[typeIndex].radius;
     this.color = FRUITS[typeIndex].color;
+    this.highlight = FRUITS[typeIndex].highlight;
     this.points = FRUITS[typeIndex].points;
     this.name = FRUITS[typeIndex].name;
     this.settled = false;
     this.merging = false;
     this.framesAboveLine = 0;
     this.id = Fruit.nextId++;
+    this.spawnTime = Date.now();
+    this.rotation = Math.random() * Math.PI * 2;
   }
 
   update() {
@@ -64,6 +68,9 @@ class Fruit {
 
     // Apply friction
     this.vx *= FRICTION;
+
+    // Subtle rotation based on horizontal velocity
+    this.rotation += this.vx * 0.02;
 
     // Wall collisions
     if (this.x - this.radius < 0) {
@@ -93,31 +100,41 @@ class Fruit {
 
     // Draw shadow
     ctx.beginPath();
-    ctx.arc(this.x + 2, this.y + 2, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.arc(this.x + 3, this.y + 3, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
     ctx.fill();
 
-    // Draw fruit body
+    // Draw fruit body with improved gradient
     const gradient = ctx.createRadialGradient(
       this.x - this.radius * 0.3,
       this.y - this.radius * 0.3,
-      this.radius * 0.1,
+      this.radius * 0.05,
       this.x,
       this.y,
       this.radius
     );
-    gradient.addColorStop(0, this.lightenColor(this.color, 40));
-    gradient.addColorStop(1, this.color);
+    gradient.addColorStop(0, this.highlight);
+    gradient.addColorStop(0.6, this.color);
+    gradient.addColorStop(1, this.darkenColor(this.color, 30));
 
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fillStyle = gradient;
     ctx.fill();
-    ctx.strokeStyle = this.darkenColor(this.color, 20);
+
+    // Outer stroke
+    ctx.strokeStyle = this.darkenColor(this.color, 40);
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Draw highlight
+    // Inner ring for depth
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius * 0.85, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Primary highlight (top-left)
     ctx.beginPath();
     ctx.arc(
       this.x - this.radius * 0.25,
@@ -126,7 +143,33 @@ class Fruit {
       0,
       Math.PI * 2
     );
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.fill();
+
+    // Small secondary highlight
+    ctx.beginPath();
+    ctx.arc(
+      this.x - this.radius * 0.15,
+      this.y - this.radius * 0.4,
+      this.radius * 0.1,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.fill();
+
+    // Bottom reflection
+    ctx.beginPath();
+    ctx.ellipse(
+      this.x + this.radius * 0.1,
+      this.y + this.radius * 0.5,
+      this.radius * 0.35,
+      this.radius * 0.15,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.fill();
 
     // Draw emoji/label for larger fruits
@@ -180,21 +223,29 @@ class SuikaGame {
 
     this.fruits = [];
     this.score = 0;
+    this.highScore = parseInt(localStorage.getItem('suika-high-score') || '0', 10);
     this.gameOver = false;
     this.dropX = CANVAS_WIDTH / 2;
     this.canDrop = true;
     this.lastDropTime = 0;
+    this.comboCount = 0;
+    this.lastMergeTime = 0;
+    this.frameCount = 0;
 
     this.currentFruitType = this.randomDropFruit();
     this.nextFruitType = this.randomDropFruit();
 
     // DOM elements
     this.scoreElement = document.getElementById('score-value');
+    this.highScoreElement = document.getElementById('high-score-value');
     this.gameOverOverlay = document.getElementById('game-over-overlay');
     this.finalScoreElement = document.getElementById('final-score');
+    this.newHighScoreElement = document.getElementById('new-high-score');
     this.dropGuide = document.getElementById('drop-guide');
     this.nextFruitPreview = document.getElementById('next-fruit-preview');
     this.gameContainer = document.querySelector('.game-container');
+
+    this.highScoreElement.textContent = this.highScore;
 
     this.setupEventListeners();
     this.updateNextFruitPreview();
@@ -340,6 +391,12 @@ class SuikaGame {
     });
   }
 
+  // ─── Score Animation ───────────────────────────────────────────────────────
+  animateScore() {
+    this.scoreElement.classList.add('bump');
+    setTimeout(() => this.scoreElement.classList.remove('bump'), 150);
+  }
+
   // ─── Physics: Collision Detection & Resolution ──────────────────────────────
   resolveCollisions() {
     const toRemove = new Set();
@@ -378,13 +435,38 @@ class SuikaGame {
 
             toAdd.push(newFruit);
 
-            // Score
-            this.score += FRUITS[newType].points;
+            // Combo tracking
+            const now = Date.now();
+            if (now - this.lastMergeTime < COMBO_WINDOW_MS) {
+              this.comboCount++;
+            } else {
+              this.comboCount = 1;
+            }
+            this.lastMergeTime = now;
+
+            // Score with combo bonus
+            const comboMultiplier = this.comboCount > 1 ? this.comboCount : 1;
+            const points = FRUITS[newType].points * comboMultiplier;
+            this.score += points;
             this.scoreElement.textContent = this.score;
+            this.animateScore();
+
+            // Update high score in real time
+            if (this.score > this.highScore) {
+              this.highScore = this.score;
+              this.highScoreElement.textContent = this.highScore;
+              localStorage.setItem('suika-high-score', String(this.highScore));
+            }
 
             // Visual effects
             this.showMergeEffect(newX, newY, FRUITS[newType]);
-            this.showScorePopup(newX, newY, FRUITS[newType].points);
+            this.showScorePopup(newX, newY, points);
+            this.showSparkles(newX, newY, FRUITS[newType].color);
+
+            // Show combo text
+            if (this.comboCount > 1) {
+              this.showComboText(newX, newY - 30, this.comboCount);
+            }
           } else {
             // Different type or max type: push apart
             const overlap = minDist - dist;
@@ -443,7 +525,40 @@ class SuikaGame {
     effect.style.background = fruitDef.color;
     effect.style.opacity = '0.6';
     this.gameContainer.appendChild(effect);
-    setTimeout(() => effect.remove(), 400);
+    setTimeout(() => effect.remove(), 500);
+  }
+
+  showSparkles(x, y, color) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = rect.width / CANVAS_WIDTH;
+    const scaleY = rect.height / CANVAS_HEIGHT;
+
+    const sparkleCount = 6;
+    for (let i = 0; i < sparkleCount; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'merge-sparkle';
+      sparkle.style.left = (x * scaleX) + 'px';
+      sparkle.style.top = (y * scaleY) + 'px';
+      sparkle.style.background = color;
+
+      const angle = (Math.PI * 2 * i) / sparkleCount;
+      const dist = 30 + Math.random() * 20;
+      const tx = Math.cos(angle) * dist;
+      const ty = Math.sin(angle) * dist;
+      sparkle.style.animation = 'none';
+      sparkle.style.transform = `translate(0, 0) scale(1)`;
+
+      this.gameContainer.appendChild(sparkle);
+
+      // Animate via requestAnimationFrame
+      requestAnimationFrame(() => {
+        sparkle.style.transition = 'transform 0.5s ease-out, opacity 0.5s ease-out';
+        sparkle.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
+        sparkle.style.opacity = '0';
+      });
+
+      setTimeout(() => sparkle.remove(), 600);
+    }
   }
 
   showScorePopup(x, y, points) {
@@ -457,7 +572,21 @@ class SuikaGame {
     popup.style.left = (x * scaleX) + 'px';
     popup.style.top = (y * scaleY) + 'px';
     this.gameContainer.appendChild(popup);
-    setTimeout(() => popup.remove(), 800);
+    setTimeout(() => popup.remove(), 1000);
+  }
+
+  showComboText(x, y, combo) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = rect.width / CANVAS_WIDTH;
+    const scaleY = rect.height / CANVAS_HEIGHT;
+
+    const text = document.createElement('div');
+    text.className = 'combo-text';
+    text.textContent = combo + 'x Combo!';
+    text.style.left = (x * scaleX - 30) + 'px';
+    text.style.top = (y * scaleY - 20) + 'px';
+    this.gameContainer.appendChild(text);
+    setTimeout(() => text.remove(), 1200);
   }
 
   // ─── Game Over Check ────────────────────────────────────────────────────────
@@ -482,6 +611,16 @@ class SuikaGame {
     this.gameOver = true;
     this.gameOverOverlay.classList.add('active');
     this.finalScoreElement.textContent = 'Final Score: ' + this.score;
+
+    // Check for new high score
+    if (this.score >= this.highScore && this.score > 0) {
+      this.highScore = this.score;
+      localStorage.setItem('suika-high-score', String(this.highScore));
+      this.highScoreElement.textContent = this.highScore;
+      this.newHighScoreElement.style.display = 'block';
+    } else {
+      this.newHighScoreElement.style.display = 'none';
+    }
   }
 
   restart() {
@@ -490,12 +629,15 @@ class SuikaGame {
     this.gameOver = false;
     this.canDrop = true;
     this.lastDropTime = 0;
+    this.comboCount = 0;
+    this.lastMergeTime = 0;
     this.dropX = CANVAS_WIDTH / 2;
     this.currentFruitType = this.randomDropFruit();
     this.nextFruitType = this.randomDropFruit();
 
     this.scoreElement.textContent = '0';
     this.gameOverOverlay.classList.remove('active');
+    this.newHighScoreElement.style.display = 'none';
     this._updateDropGuide();
     this.updateNextFruitPreview();
 
@@ -504,33 +646,75 @@ class SuikaGame {
 
   // ─── Draw ───────────────────────────────────────────────────────────────────
   draw() {
+    this.frameCount++;
+
     // Clear
     this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Background
+    // Background with subtle animated gradient
     const bgGradient = this.ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
-    bgGradient.addColorStop(0, '#1a1a2e');
+    bgGradient.addColorStop(0, '#0d0d1a');
+    bgGradient.addColorStop(0.5, '#1a1a2e');
     bgGradient.addColorStop(1, '#16213e');
     this.ctx.fillStyle = bgGradient;
     this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Danger line
+    // Subtle grid pattern for depth
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+    this.ctx.lineWidth = 1;
+    for (let gx = 0; gx < CANVAS_WIDTH; gx += 40) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(gx, 0);
+      this.ctx.lineTo(gx, CANVAS_HEIGHT);
+      this.ctx.stroke();
+    }
+    for (let gy = 0; gy < CANVAS_HEIGHT; gy += 40) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, gy);
+      this.ctx.lineTo(CANVAS_WIDTH, gy);
+      this.ctx.stroke();
+    }
+
+    // Danger line with glow
+    this.ctx.save();
     this.ctx.setLineDash([10, 10]);
-    this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+    this.ctx.strokeStyle = 'rgba(255, 50, 50, 0.25)';
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
     this.ctx.moveTo(0, DANGER_LINE_Y);
     this.ctx.lineTo(CANVAS_WIDTH, DANGER_LINE_Y);
     this.ctx.stroke();
+
+    // Danger zone glow
+    const dangerGradient = this.ctx.createLinearGradient(0, DANGER_LINE_Y - 20, 0, DANGER_LINE_Y + 5);
+    dangerGradient.addColorStop(0, 'rgba(255, 50, 50, 0)');
+    dangerGradient.addColorStop(0.5, 'rgba(255, 50, 50, 0.05)');
+    dangerGradient.addColorStop(1, 'rgba(255, 50, 50, 0)');
     this.ctx.setLineDash([]);
+    this.ctx.fillStyle = dangerGradient;
+    this.ctx.fillRect(0, DANGER_LINE_Y - 20, CANVAS_WIDTH, 25);
+    this.ctx.restore();
 
     // Draw current fruit preview at drop position
     if (!this.gameOver && this.canDrop) {
       const previewFruit = FRUITS[this.currentFruitType];
-      this.ctx.globalAlpha = 0.4;
+      this.ctx.globalAlpha = 0.35;
+
+      // Preview with gradient
+      const prevGrad = this.ctx.createRadialGradient(
+        this.dropX - previewFruit.radius * 0.2,
+        previewFruit.radius - previewFruit.radius * 0.2,
+        previewFruit.radius * 0.1,
+        this.dropX,
+        previewFruit.radius,
+        previewFruit.radius
+      );
+      prevGrad.addColorStop(0, lightenHex(previewFruit.color, 30));
+      prevGrad.addColorStop(1, previewFruit.color);
+
       this.ctx.beginPath();
       this.ctx.arc(this.dropX, previewFruit.radius, previewFruit.radius, 0, Math.PI * 2);
-      this.ctx.fillStyle = previewFruit.color;
+      this.ctx.fillStyle = prevGrad;
       this.ctx.fill();
       this.ctx.globalAlpha = 1.0;
     }
@@ -539,6 +723,13 @@ class SuikaGame {
     for (const fruit of this.fruits) {
       fruit.draw(this.ctx);
     }
+
+    // Floor glow effect
+    const floorGlow = this.ctx.createLinearGradient(0, CANVAS_HEIGHT - 20, 0, CANVAS_HEIGHT);
+    floorGlow.addColorStop(0, 'rgba(100, 50, 200, 0)');
+    floorGlow.addColorStop(1, 'rgba(100, 50, 200, 0.08)');
+    this.ctx.fillStyle = floorGlow;
+    this.ctx.fillRect(0, CANVAS_HEIGHT - 20, CANVAS_WIDTH, 20);
   }
 
   // ─── Game Loop ──────────────────────────────────────────────────────────────
