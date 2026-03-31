@@ -1,0 +1,25 @@
+{
+  "name": "gsukia",
+  "version": "1.0.0",
+  "description": "A browser-based fruit-merging puzzle game inspired by [SuikaGame.com](https://suikagame.com), built with vanilla HTML, CSS, and JavaScript — no external dependencies required.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isianust/GSukia.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/isianust/GSukia/issues"
+  },
+  "homepage": "https://github.com/isianust/GSukia#readme",
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0"
+  }
+}
