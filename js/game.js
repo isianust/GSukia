@@ -33,6 +33,7 @@ const BOUNCE = 0.3;
 const DANGER_LINE_Y = 80;
 const DROP_COOLDOWN_MS = 500;
 const GAME_OVER_GRACE_FRAMES = 90; // frames a fruit must be above line before game over
+const COMBO_WINDOW_MS = 1000; // milliseconds within which merges count as a combo
 
 // ─── Physics Body Class ─────────────────────────────────────────────────────────
 class Fruit {
@@ -436,7 +437,7 @@ class SuikaGame {
 
             // Combo tracking
             const now = Date.now();
-            if (now - this.lastMergeTime < 1000) {
+            if (now - this.lastMergeTime < COMBO_WINDOW_MS) {
               this.comboCount++;
             } else {
               this.comboCount = 1;
