@@ -357,7 +357,7 @@ describe('Fruit Class', () => {
     });
 
     test('velocity should stop at floor when bouncing with low vy', () => {
-      const fruit = new Fruit(200, CANVAS_HEIGHT - fruit_radius_for(0), 0);
+      const fruit = new Fruit(200, CANVAS_HEIGHT - fruitRadiusFor(0), 0);
       fruit.vy = 0.3; // low velocity
       fruit.update();
       // After bounce with BOUNCE=0.3, result should be < 0.5 threshold
@@ -496,7 +496,7 @@ describe('Fruit Class', () => {
 });
 
 // Helper for getting radius by type index
-function fruit_radius_for(typeIndex) {
+function fruitRadiusFor(typeIndex) {
   return [15, 20, 25, 30, 38, 45, 52, 60, 68, 78, 90][typeIndex];
 }
 
