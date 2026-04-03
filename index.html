@@ -7,46 +7,14 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="game-wrapper">
-    <!-- Header: Title & Score -->
-    <div class="game-header">
-      <div class="game-title">🍉 Suika</div>
-      <div class="score-display">
-        <span class="score-label">Score</span>
-        <span class="score-value" id="score-value">0</span>
-      </div>
-    </div>
 
-    <!-- High Score -->
-    <div class="high-score-display">
-      <span class="high-score-label">Best:</span>
-      <span class="high-score-value" id="high-score-value">0</span>
-    </div>
+  <!-- Phaser renders into this container -->
+  <div id="game-container"></div>
 
-    <!-- Next Fruit Preview -->
-    <div class="next-fruit-display">
-      <span class="next-label">Next:</span>
-      <canvas id="next-fruit-preview" width="30" height="30"></canvas>
-    </div>
+  <!-- Phaser 3 (includes Matter.js physics) -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 
-    <!-- Game Area -->
-    <div class="game-container">
-      <div class="drop-guide" id="drop-guide"></div>
-      <canvas id="game-canvas"></canvas>
-
-      <!-- Game Over Overlay -->
-      <div class="game-over-overlay" id="game-over-overlay">
-        <div class="game-over-text">Game Over!</div>
-        <div class="final-score" id="final-score">Final Score: 0</div>
-        <div class="new-high-score" id="new-high-score" style="display: none;">🏆 New High Score! 🏆</div>
-        <button class="restart-btn" id="restart-btn">Play Again</button>
-      </div>
-    </div>
-
-    <!-- Fruit Legend -->
-    <div class="fruit-legend" id="fruit-legend"></div>
-  </div>
-
-  <script src="js/game.js"></script>
+  <!-- Application entry point (ES module) -->
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
