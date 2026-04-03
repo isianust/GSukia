@@ -117,7 +117,7 @@ describe('Ball Definitions (BALL_DEFS)', () => {
     }
   });
 
-  test('all colorStr values should be valid hex colours', () => {
+  test('all colorStr values should be valid hex colors', () => {
     const hexRegex = /^#[0-9a-fA-F]{6}$/;
     BALL_DEFS.forEach((def) => {
       expect(def.colorStr).toMatch(hexRegex);
@@ -142,7 +142,7 @@ describe('Ball Definitions (BALL_DEFS)', () => {
     expect(last.value).toBe(2048);
   });
 
-  test('colour ordering matches spec: Red → Orange → Yellow → Green → Blue', () => {
+  test('color ordering matches spec: Red → Orange → Yellow → Green → Blue', () => {
     expect(BALL_DEFS[0].name).toBe('Red');
     expect(BALL_DEFS[1].name).toBe('Orange');
     expect(BALL_DEFS[2].name).toBe('Yellow');

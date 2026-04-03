@@ -115,7 +115,7 @@ export class GameScene extends Phaser.Scene {
   createBall(x, y, level) {
     const def = BALL_DEFS[level - 1];
 
-    // ── Coloured circle ──────────────────────────────────────────────────
+    // ── Colored circle ───────────────────────────────────────────────────
     const gfx = this.add.graphics();
     gfx.fillStyle(def.color, 1);
     gfx.fillCircle(0, 0, def.radius);
